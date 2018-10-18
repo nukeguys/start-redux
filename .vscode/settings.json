@@ -1,0 +1,13 @@
+{
+    "search.exclude": {
+      "**/node_modules": true
+    },
+    "prettier.singleQuote": true,
+    "prettier.trailingComma": "all",
+    "prettier.disableLanguages": ["json"],
+    "json.format.enable": false,
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "javascript.preferences.importModuleSpecifier": "non-relative"
+  }
+  
