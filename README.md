@@ -1,6 +1,7 @@
 # start-redux
 
-Redux is a predictable state container for JavaScript apps.
+Redux is a predictable state container for JavaScript apps.  
+State를 Component 외부에서 관리할 수 있다.
 
 ## Install
 
@@ -18,6 +19,10 @@ npm install --save-dev redux-devtools
 `Changes are made with pure functions`: To specify how the state tree is transformed by actions, you write pure reducers.
 
 ## Concept
+
+### FLUX
+
+![flux](https://velopert.com/wp-content/uploads/2016/04/flux-simple-f8-diagram-with-client-action-1300w.png)
 
 ### Action
 
@@ -146,7 +151,7 @@ export default todoApp;
 > It's important to note that you'll only have a single store in a Redux application.
 
 ```js
-cimport { createStore } from 'redux';
+import { createStore } from 'redux';
 import todoApp from './reducers';
 import {
   addTodo,
@@ -169,6 +174,8 @@ store.dispatch(setVisibilityFilter(VisibilityFilters.SHOW_COMPLETED));
 unsubscribe();
 ```
 
+[Redux](https://codesandbox.io/s/mo41218ky)
+
 ## With React
 
 ### Presentational and Container Components
@@ -185,4 +192,6 @@ unsubscribe();
 
 - [Redux](https://redux.js.org/)
 - [[번역] 프레젠테이션 컴포넌트와 컨테이너 컴포넌트](https://blueshw.github.io/2017/06/26/presentaional-component-container-component/?no-cache=1)
+- [[React.JS] 강좌 10-1편 Redux: React 앱의 효율적인 데이터 교류](https://velopert.com/1225)
+- [리덕스(Redux)를 왜 쓸까? 그리고 리덕스를 편하게 사용하기 위한 발악 (i)](https://velopert.com/3528)
 - [Typechecking With PropTypes](https://reactjs.org/docs/typechecking-with-proptypes.html)
