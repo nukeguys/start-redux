@@ -1,7 +1,7 @@
 # start-redux
 
 Redux is a predictable state container for JavaScript apps.  
-State를 Component 외부에서 관리할 수 있다.
+State 를 Component 외부에서 관리할 수 있다.
 
 ## Install
 
@@ -30,20 +30,7 @@ An action is a plain JavaScript object that describes what happened.
 
 #### Action Creator
 
-functions that crate actions.
-
-```js
-function addTodo(text) {
-  return {
-    type: ADD_TODO, // `type` property  필수
-    text,
-  };
-}
-dispatch(addTodo(text));
-// or
-const boundAddTodo = text => dispatch(addTodo(text)); // bound action creator
-boundAddTodo(text);
-```
+functions that create actions.
 
 ```js
 export const ADD_TODO = 'ADD_TODO';
@@ -67,6 +54,19 @@ export function toggleTodo(index) {
 export function setVisibilityFilter(filter) {
   return { type: SET_VISIBILITY_FILTER, filter };
 }
+```
+
+```js
+function addTodo(text) {
+  return {
+    type: ADD_TODO, // `type` property  필수
+    text,
+  };
+}
+dispatch(addTodo(text));
+// or
+const boundAddTodo = text => dispatch(addTodo(text)); // bound action creator
+boundAddTodo(text);
 ```
 
 ### Reducer
@@ -174,7 +174,7 @@ store.dispatch(setVisibilityFilter(VisibilityFilters.SHOW_COMPLETED));
 unsubscribe();
 ```
 
-[Redux](https://codesandbox.io/s/mo41218ky)
+[Redux without React](https://codesandbox.io/s/r5kx9x00mo)
 
 ## With React
 
@@ -182,16 +182,131 @@ unsubscribe();
 
 ![Presentational and Container Components](./img/Presentational-and-Container-Components.png)
 
-`connect()`
+### connect([mapStateToProps], [mapDispatchToProps], [mergeProps], [options]) - [connect.js](https://github.com/reduxjs/react-redux/blob/master/src/connect/connect.js)
 
-`mapStateToProps`
+`mapStateToProps` describes how to transform the current Redux store state into the props you want to pass to a presentational component you are wrapping
 
-`mapDispatchToProps`
+```js
+const getVisibleTodos = (todos, filter) => {
+  switch (filter) {
+    case 'SHOW_COMPLETED':
+      return todos.filter(t => t.completed)
+    case 'SHOW_ACTIVE':
+      return todos.filter(t => !t.completed)
+    case 'SHOW_ALL':
+    default:
+      return todos
+  }
+}
+​
+const mapStateToProps = state => {
+  return {
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  }
+}
+```
+
+`mapDispatchToProps` receives the dispatch() method and returns callback props that you want to inject into the presentational component.
+
+```js
+const mapDispatchToProps = dispatch => {
+  return {
+    onTodoClick: id => {
+      dispatch(toggleTodo(id));
+    },
+  };
+};
+```
+
+```js
+// connect() is a function that injects Redux-related props into your component.
+// You can inject data and callbacks that change that data by dispatching actions.
+function connect(mapStateToProps, mapDispatchToProps) {
+  // It lets us inject component as the last step so people can use it as a decorator.
+  // Generally you don't need to worry about it.
+  return function (WrappedComponent) {
+    // It returns a component
+    return class extends React.Component {
+      render() {
+        return (
+          // that renders your component
+          <WrappedComponent
+            {/* with its props  */}
+            {...this.props}
+            {/* and additional props calculated from Redux store */}
+            {...mapStateToProps(store.getState(), this.props)}
+            {...mapDispatchToProps(store.dispatch, this.props)}
+          />
+        )
+      }
+
+      componentDidMount() {
+        // it remembers to subscribe to the store so it doesn't miss updates
+        this.unsubscribe = store.subscribe(this.handleChange.bind(this))
+      }
+
+      componentWillUnmount() {
+        // and unsubscribe later
+        this.unsubscribe()
+      }
+
+      handleChange() {
+        // and whenever the store state changes, it re-renders.
+        this.forceUpdate()
+      }
+    }
+  }
+}
+
+// This is not the real implementation but a mental model.
+// It skips the question of where we get the "store" from (answer: <Provider> puts it in React context)
+// and it skips any performance optimizations (real connect() makes sure we don't re-render in vain).
+
+// The purpose of connect() is that you don't have to think about
+// subscribing to the store or perf optimizations yourself, and
+// instead you can specify how to get props based on Redux store state:
+
+const ConnectedCounter = connect(
+  // Given Redux state, return props
+  state => ({
+    value: state.counter,
+  }),
+  // Given Redux dispatch, return callback props
+  dispatch => ({
+    onIncrement() {
+      dispatch({ type: 'INCREMENT' })
+    }
+  })
+)(Counter)
+```
+
+`Provider`
+
+[Provider.js](https://github.com/reduxjs/react-redux/blob/master/src/components/Provider.js)
+
+```js
+import React from 'react'
+import { render } from 'react-dom'
+import { Provider } from 'react-redux'
+import { createStore } from 'redux'
+import todoApp from './reducers'
+import App from './components/App'
+​
+const store = createStore(todoApp)
+​
+render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+)
+```
 
 ## Reference
 
 - [Redux](https://redux.js.org/)
 - [[번역] 프레젠테이션 컴포넌트와 컨테이너 컴포넌트](https://blueshw.github.io/2017/06/26/presentaional-component-container-component/?no-cache=1)
-- [[React.JS] 강좌 10-1편 Redux: React 앱의 효율적인 데이터 교류](https://velopert.com/1225)
+- [[React.JS] 강좌 10-1 편 Redux: React 앱의 효율적인 데이터 교류](https://velopert.com/1225)
+- [컴포넌트에 날개를 달아줘, 리액트 Higher-order Component (HoC)](https://velopert.com/3537)
 - [리덕스(Redux)를 왜 쓸까? 그리고 리덕스를 편하게 사용하기 위한 발악 (i)](https://velopert.com/3528)
 - [Typechecking With PropTypes](https://reactjs.org/docs/typechecking-with-proptypes.html)
